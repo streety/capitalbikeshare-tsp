@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Capital Bikeshare: Round the network trip</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/StPatricks.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+        
+        
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                <section data-markdown>
+                    <script type="text/template">
+                        # Round the network trip
+                        ## How long would it take?
+                        
+                        ### Jonathan Street
+                       
+                    </script>
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## About me
+                        
+                        * Volunteered to give a talk on Capital Bikeshare <!-- .element: class="fragment" -->
+                        * Never used Capital Bikeshare <!-- .element: class="fragment" -->
+                        
+                    </script>
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Capital Bikeshare
+                        
+                        * 441 stations 
+                        * 3k+ bikes
+                        * 11k trips/day
+                        
+                    </script>
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## How big is it?
+                        
+                        What does big even mean?
+                        
+                        How long would it take to visit every station? <!-- .element: class="fragment" -->
+                        
+                    </script>
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## What do we need?
+                        
+                        * Location of each station <!-- .element: class="fragment" -->
+                        * Distance between each station <!-- .element: class="fragment" -->
+                        * Optimization to find shortest route <!-- .element: class="fragment" -->
+                    </script>
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Station locations
+                        
+                        [System data](https://www.capitalbikeshare.com/system-data) is downloadable
+                        
+                        Live station feed has location, # bikes, etc in xml
+                    </script>
+                </section>
+                
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Distance between stations
+                            
+                            * As the crow flies . . . easy <!-- .element: class="fragment" -->
+                            * As the cyclist cycles . . . hard <!-- .element: class="fragment" -->
+                        </script>
+                    </section>
+                    
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Pre-computing all station-to-station distances
+                            
+                            [Google Maps Distance Matrix API](https://developers.google.com/maps/documentation/distance-matrix/)
+                            
+                            [There are limits](https://developers.google.com/maps/documentation/javascript/distancematrix#UsageLimits) <!-- .element: class="fragment" -->
+                            
+                            * Max 25 origins and destinations per query <!-- .element: class="fragment" -->
+                            * Max 100 distances per query <!-- .element: class="fragment" -->
+                            * Max 2500 distances per day <!-- .element: class="fragment" -->
+                            * Fees for higher usage <!-- .element: class="fragment" -->
+                        </script>
+                    </section>
+                    
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Distances needed
+                            
+                            Distances asymmetrical so need every combination
+                            
+                            441 * 441 = 194481 <!-- .element: class="fragment" -->
+                            
+                            
+                            ### Google is out . . . too slow/expensive <!-- .element: class="fragment" -->
+                        </script> 
+                    </section>
+                    
+                </section>
+                
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Open data and open source software
+                            
+                            Fortunately there are options for both data and software to create our own solution
+                        </script> 
+                    </section>
+                    
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Open data 
+                            
+                            * [BBBike - Washington DC](http://download.bbbike.org/osm/bbbike/WashingtonDC/)
+                            * [BBBike - North America](http://download.bbbike.org/osm/planet/sub-planet/) with trimming using [osmconvert](http://wiki.openstreetmap.org/wiki/Osmconvert#Clipping_based_on_a_Polygon)
+                            * Finally used [mapzen](https://mapzen.com/data/metro-extracts/metro/dc-baltimore_maryland/)
+                        </script> 
+                    </section>
+                    
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Open source software
+                            
+                            ### PostGIS and [pgrouting](http://pgrouting.org/)
+                            
+                            * All data stored in a postgresql database <!-- .element: class="fragment" data-fragment-index="1" -->
+                            
+                            however . . .<!-- .element: class="fragment" data-fragment-index="2" -->
+                            
+                            * Surprisingly slow <!-- .element: class="fragment" data-fragment-index="2" -->
+                            * Struggled locating some stations <!-- .element: class="fragment" data-fragment-index="3" --> - [using this code](http://workshop.pgrouting.org/2.1.0-dev/en/chapters/function.html)<!-- .element: class="fragment" data-fragment-index="3" -->
+                        </script> 
+                    </section>
+                    
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Open source software
+                            
+                            ### [OSRM - Open Source Routing Machine](http://project-osrm.org/)
+                            
+                            * Own data format <!-- .element: class="fragment" -->
+                            * C API and HTTP REST API <!-- .element: class="fragment" -->
+                            * Fast <!-- .element: class="fragment" --> 
+                            * Found every station <!-- .element: class="fragment" -->
+                        </script> 
+                    </section>
+                    
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## OSRM
+                            
+                            Includes distance matrix option
+                            
+                            Also includes solver for shortest trip <!-- .element: class="fragment" -->
+                        </script> 
+                    </section>
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## [Results](../map/index.html)
+                        
+                        * 264.6 miles (425.9 kilometres) <!-- .element: class="fragment" -->
+                        * 32 hours, 10 minutes <!-- .element: class="fragment" -->
+                        
+                        
+                    </script> 
+                </section>
+                
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Next steps?
+                        
+                        * Divide into multiple trips and optimize<!-- .element: class="fragment" -->
+                        * Minimize station-to-station durations over 30 minutes<!-- .element: class="fragment" -->
+                        * Custom map styles <!-- .element: class="fragment" -->
+                        
+                        
+                    </script> 
+                </section>
+                
+                <section data-markdown>
+                    <script type="text/template">
+                        # Thanks!
+                    </script> 
+                </section>
+                
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
